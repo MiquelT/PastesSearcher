@@ -1,0 +1,41 @@
+<config>
+
+     <!-- Email configuration -->
+    <email active="0">
+        <user>emailUser@gmail.com</user>
+        <password>password</password>
+        <smtp>smtp.gmail.com:587</smtp>
+
+         <!-- Emails to send alerts -->
+        <send>list1@listas.org</send>
+        <send>destinatario@gmail.com</send>
+    </email>
+
+    <!-- Recomended both activated (1) -->
+    <proxy>1</proxy>
+    <CreateProxyList>1</CreateProxyList>
+
+    <!-- config files path -->
+    <regexFile>Config/regex.conf</regexFile>
+    <proxysFile>Config/proxyList.conf</proxysFile>
+    <resultsPath>Data/</resultsPath>
+
+    <!-- 1 to activate the search -->
+    <sites>
+        <site name="pastebin">1</site>
+        <site name="pastie">1</site>
+        <site name="linkpaste">0</site>
+        <site name="gist.github">1</site>
+        <site name="ideone">1</site>
+        <site name="codepad">1</site>
+        <site name="snipt">0</site>
+        <site name="slexy">1</site>
+        <site name="dropbucket">0</site>
+        <site name="paste.ru">1</site>
+        <site name="paste.lisp">1</site>
+        <site name="dzone">1</site>
+        <site name="lpaste">1</site>
+    </sites>
+
+
+</config>
