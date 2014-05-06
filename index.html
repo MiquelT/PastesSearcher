@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <title>Pastessearcher by MiquelT</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Pastessearcher</h1>
+        <h2>Pastes Searcher es un script para controlar los historiales de diversas fuentes de compartición de texto o código, permitiendo la detección de strings o patrones en estos.</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/MiquelT/PastesSearcher/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/MiquelT/PastesSearcher/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/MiquelT/PastesSearcher" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>
+<a name="pastessearcher" class="anchor" href="#pastessearcher"><span class="octicon octicon-link"></span></a>PastesSearcher</h1>
+
+<h1></h1>
+
+<p>Pastes Searcher es un script para controlar los historiales de diversas fuentes de compartición de texto o código, permitiendo la detección de strings o patrones en éstos.</p>
+
+<h2>
+<a name="configuraci%C3%B3n" class="anchor" href="#configuraci%C3%B3n"><span class="octicon octicon-link"></span></a>Configuración</h2>
+
+<p>El archivo de configuración por defecto estará en dentro de la carpeta "Config".</p>
+
+<p>Para activar el email debemos poner un 1 al atributo "active" del tag "email".
+Dentro del tag tenemos los diferentes parámetros para configurar el envío del email y los destinatarios.</p>
+
+<p>El tag "proxy" sirve para utilizar la proxyList. Recomendamos utilizarla siempre o de lo contrario bloquearán el acceso de vuestra IP.
+El tag "CreateProxyList" sirve para actualizar la proxyList. Es recomendable actualizarla periodicamente para no utilizar proxys desfasadas.
+El tag "proxyListUpdateTime" sirve para actualizar la proxyList automáticamente cada X segundos. De esta manera nos aseguramos que las proxys están activas y funcionando.</p>
+
+<p>En el tag "sitse" podemos encontrar las diferentes fuentes.
+Puede activar y desactivar cualquier fuente dandole como parámetro un 1 o un 0 repectivamente.</p>
+
+<pre><code>&lt;config&gt;
+
+     &lt;!-- Email configuration --&gt;
+    &lt;email active="1"&gt;
+        &lt;user&gt;user@gmail.com&lt;/user&gt;
+        &lt;password&gt;password&lt;/password&gt;
+        &lt;smtp&gt;smtp.gmail.com:587&lt;/smtp&gt;
+
+         &lt;!-- Emails to send alerts --&gt;
+        &lt;send&gt;destinatario1@hotmail.com&lt;/send&gt;
+        &lt;send&gt;destinatario2@gmail.com&lt;/send&gt;
+    &lt;/email&gt;
+
+    &lt;!-- Recomended both activated (1) --&gt;
+    &lt;proxy&gt;1&lt;/proxy&gt;
+    &lt;CreateProxyList&gt;1&lt;/CreateProxyList&gt;
+    &lt;proxyListUpdateTime&gt;3600&lt;/proxyListUpdateTime&gt; &lt;!--  in seconds  --&gt;
+
+
+    &lt;!-- config files path --&gt;
+    &lt;regexFile&gt;Config/regex.conf&lt;/regexFile&gt;
+    &lt;proxysFile&gt;Config/proxyList.conf&lt;/proxysFile&gt;
+    &lt;resultsPath&gt;Data/&lt;/resultsPath&gt;
+
+    &lt;!-- 1 to activate the search --&gt;
+    &lt;sites&gt;
+    &lt;site name="pastebin"&gt;1&lt;/site&gt;
+    &lt;site name="pastie"&gt;1&lt;/site&gt;
+    &lt;site name="linkpaste"&gt;1&lt;/site&gt;
+    &lt;site name="gist.github"&gt;1&lt;/site&gt;
+    &lt;site name="ideone"&gt;1&lt;/site&gt;
+    &lt;site name="codepad"&gt;1&lt;/site&gt;
+    &lt;site name="snipt"&gt;1&lt;/site&gt;
+    &lt;site name="slexy"&gt;1&lt;/site&gt;
+    &lt;site name="dropbucket"&gt;1&lt;/site&gt;
+    &lt;site name="paste.ru"&gt;1&lt;/site&gt;
+    &lt;site name="paste.lisp"&gt;1&lt;/site&gt;
+    &lt;site name="dzone"&gt;1&lt;/site&gt;
+    &lt;site name="lpaste"&gt;1&lt;/site&gt;
+    &lt;site name="copytaste"&gt;1&lt;/site&gt;
+    &lt;/sites&gt;
+
+
+&lt;/config&gt;
+</code></pre>
+
+<h2>
+<a name="proxylist" class="anchor" href="#proxylist"><span class="octicon octicon-link"></span></a>ProxyList</h2>
+
+<p>La proxyList la puede crear directamente con el programa o puede utilizar usted las proxys que quiera. Para añadir una proxy en la ProxyList debe seguir el siguiente formato:</p>
+
+<pre><code>IP:Port protocol
+</code></pre>
+
+<p>Donde protocol es https o http según el protocolo del proxy.</p>
+
+<pre><code>119.31.123.207:8000 https
+46.235.92.43:80 https
+212.154.154.220:8080 https
+91.236.82.85:8080 http
+. . .
+</code></pre>
+
+<p>Si utiliza una proxy list creada automaticamente, ésta se actualizará automaticamente. La frecuencia de actualización la puede definir en el parametro "proxyListUpdateTime". Por defecto no se actualizará más de una vez cada 15 min.</p>
+
+<h2>
+<a name="regex" class="anchor" href="#regex"><span class="octicon octicon-link"></span></a>Regex</h2>
+
+<p>El archivo regex.conf es donde pondremos los patrones de búsqueda. Puede poner simples palabras o cadenas regex.</p>
+
+<p>Se buscará por cada tag "regex".
+Cada regex debe tener un tag "search" y puede tener uno o más tags "include" y "exclude".</p>
+
+<p>Para crear una lista de forma rápida de regex con un solo elemento a buscar, podemos crear un documento con una lista de regex, una por linea, y ejecutar el script RegexIncluder.</p>
+
+<p>Para ejecutar el Script RegexIncluder deberemos indicar si queremos añadir esas regex al documento de configuración ya existente o crear un documento nuevo (-a o -n respectivamente) y a continuación indicar el path del documento que contiene la lista de regex.</p>
+
+<pre><code>&lt;config&gt;
+
+        &lt;!-- Example of simple search: search for "password" --&gt;
+        &lt;regex&gt;
+                &lt;search&gt;password&lt;/search&gt;
+        &lt;/regex&gt;
+
+        &lt;!-- Example of inclusion: search for "user" and "pass" in the same pastie --&gt;
+        &lt;regex&gt;
+                &lt;search&gt;user&lt;/search&gt;
+                &lt;include&gt;pass&lt;/include&gt;
+        &lt;/regex&gt;
+
+        &lt;!-- Example fo exclusion: search for telf" without "email" in the same pastie --&gt;
+        &lt;regex&gt;
+                &lt;search&gt;telf&lt;/search&gt;
+                &lt;exclude&gt;email&lt;/exclude&gt;
+        &lt;/regex&gt;
+
+        &lt;!-- Example of match with an IP address with a regex string --&gt;
+        &lt;regex&gt;
+                &lt;search&gt;\d+\.\d+\.\d+\.\d+&lt;/search&gt;
+        &lt;/regex&gt;
+
+        . . .
+
+&lt;/config&gt;
+</code></pre>
+
+<h2>
+<a name="ejecuci%C3%B3n" class="anchor" href="#ejecuci%C3%B3n"><span class="octicon octicon-link"></span></a>Ejecución</h2>
+
+<pre><code>python main.py [-c ConfigFilePath]
+</code></pre>
+
+<h2>
+<a name="dependencias" class="anchor" href="#dependencias"><span class="octicon octicon-link"></span></a>Dependencias</h2>
+
+<ul>
+<li>Python 2 (2.7 should be sufficient)</li>
+<li>
+<a href="https://pypi.python.org/pypi/BeautifulSoup/3.2.1">BeautifulSoup</a> version 3.2.1</li>
+</ul><h2>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>Esta obra está sujeta a la licencia <a href="http://creativecommons.org/licenses/by-nc/4.0/">Reconocimiento-NoComercial 4.0 Internacional de Creative Commons</a>. Para ver una copia de esta licencia, visite visite<a href="http://creativecommons.org/licenses/by-nc/4.0/">http://creativecommons.org/licenses/by-nc/4.0/</a>.</p>
+
+<h2>
+<a name="como-puede-ayudar" class="anchor" href="#como-puede-ayudar"><span class="octicon octicon-link"></span></a>Como puede ayudar</h2>
+
+<p>Si encuentra cualquier error o problema puede <a href="https://twitter.com/miqueltur">contactar conmigo en Twitter</a> o por <a href="mailto:miquel.tur.m@gmail.com">email</a>.</p>
+      </section>
+    </div>
+
+    
+  </body>
+</html>
