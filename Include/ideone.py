@@ -17,12 +17,18 @@ class Ideone(threading.Thread):
         self.ideone_url = "http://ideone.com/plain"
 
         self.lib = lib
+        self.found = []
 
 
     def run(self):
         print "Starting Ideone Thread"
         while 1:
-            self.ideone()
+            try:
+                self.ideone()
+            except:
+                print "**Error in Ideone"
+                time.sleep(60)
+                pass
             time.sleep(10)
         print "Exiting Ideone Thread"
 
@@ -46,23 +52,28 @@ class Ideone(threading.Thread):
             divsv = soup.findAll('div',{"class" : "source-view"})
 
             for div in divsv:
-                a = div.findAll('a')[0]
-                final_url = self.ideone_url + a['href']
                 try:
-                    html=self.lib.request_url(final_url)
+                    a = div.findAll('a')[0]
+                    final_url = self.ideone_url + a['href']
+                    id = a['href'][1:]
+                    try:
+                        html=self.lib.request_url(final_url)
+                    except:
+                        continue
+
+                    pre=BeautifulSoup(html).text
+
+                    try:
+                        b = self.lib.search_regex(pre)
+                    except:
+                        continue
+
+                    if b and not id in self.found:
+                        self.found.append(id)
+                        print "La url: " + final_url + " coincide con alguna de las busquedas!"
+                        date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        self.lib.write_global_document(final_url)
+                        self.lib.create_find_document(id,pre,"Ideone")
+                        self.lib.send_email(pre,"Ideone",final_url)
                 except:
                     continue
-
-                pre=BeautifulSoup(html).text
-
-                try:
-                    b = self.lib.search_regex(pre)
-                except:
-                    continue
-
-                if b:
-                    print "La url: " + final_url + " coincide con alguna de las busquedas!"
-                    date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    self.lib.write_global_document(final_url)
-                    self.lib.create_find_document(a['href'][1:],pre,"Ideone")
-                    self.lib.send_email(pre,"Ideone",final_url)

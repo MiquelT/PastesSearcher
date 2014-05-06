@@ -15,12 +15,18 @@ class Lpaste(threading.Thread):
         self.lpaste_url = "http://lpaste.net/browse?pastes_page="
         self.basic_url = "http://lpaste.net/raw"
         self.lib = lib
+        self.found = []
 
 
     def run(self):
         print "Starting Lpaste Thread"
         while 1:
-            self.lpaste()
+            try:
+                self.lpaste()
+            except:
+                print "**Eror in Lpaste"
+                time.sleep(60)
+                pass
             time.sleep(10)
         print "Exiting Lpaste Thread"
 
@@ -36,7 +42,6 @@ class Lpaste(threading.Thread):
             while can:
                 try:
                     html=self.lib.request_url(self.lpaste_url + str(i))
-                    # html = urllib2.urlopen("http://pastebin.com/archive").read()
                     can = False
                 except:
                     pass
@@ -48,22 +53,27 @@ class Lpaste(threading.Thread):
 
 
             for a in aHref:
-                if not "/browse" in a['href']:
-                    final_url = self.basic_url + a['href']
-                    try:
-                        html=self.lib.request_url(final_url)
-                    except:
-                        continue
+                try:
+                    if not "/browse" in a['href']:
+                        final_url = self.basic_url + a['href']
+                        id = a['href'][1:]
+                        try:
+                            html=self.lib.request_url(final_url)
+                        except:
+                            continue
 
-                    try:
-                        b = self.lib.search_regex(html)
-                    except:
-                        continue
+                        try:
+                            b = self.lib.search_regex(html)
+                        except:
+                            continue
 
-                    if b:
-                        print "La url: " + final_url + " coincide con alguna de las busquedas!"
-                        date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                        self.lib.write_global_document(final_url)
-                        self.lib.create_find_document(a['href'][1:],html,"Lpaste")
-                        self.lib.send_email(html,"Lpaste",final_url)
+                        if b and not id in self.found:
+                            self.found.append(id)
+                            print "La url: " + final_url + " coincide con alguna de las busquedas!"
+                            date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                            self.lib.write_global_document(final_url)
+                            self.lib.create_find_document(id,html,"Lpaste")
+                            self.lib.send_email(html,"Lpaste",final_url)
 
+                except:
+                    continue

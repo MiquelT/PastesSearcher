@@ -15,12 +15,18 @@ class Githubgist(threading.Thread):
         self.githubgist_url = "https://gist.github.com/discover?page="
         self.basic_url = "https://gist.github.com"
         self.lib = lib
+        self.found = []
 
 
     def run(self):
         print "Starting Githubgist Thread"
         while 1:
-            self.githubgist()
+            try:
+                self.githubgist()
+            except:
+                print "**Error in githubgist"
+                time.sleep(60)
+                pass
             time.sleep(10)
         print "Exiting Githubgist Thread"
 
@@ -46,25 +52,29 @@ class Githubgist(threading.Thread):
             aHref = soup.findAll('a',{ "class" : "link-overlay" })
 
             for a in aHref:
-                if not "archive/" in a['href']:
-                    final_url = self.basic_url + a['href']
-                    try:
-                        html=self.lib.request_url(final_url)
-                    except:
-                        continue
+                try:
+                    if not "archive/" in a['href']:
+                        final_url = self.basic_url + a['href']
+                        id = a['href'].replace('/','_')
+                        try:
+                            html=self.lib.request_url(final_url)
+                        except:
+                            continue
 
-                    soup=BeautifulSoup(html)
-                    div = soup.find('div',{ "class" : "column files" }).text
+                        soup=BeautifulSoup(html)
+                        div = soup.find('div',{ "class" : "column files" }).text
 
-                    try:
-                        b = self.lib.search_regex(div)
-                    except:
-                        continue
+                        try:
+                            b = self.lib.search_regex(div)
+                        except:
+                            continue
 
-                    if b:
-                        print "La url: " + final_url + " coincide con alguna de las busquedas!"
-                        date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                        self.lib.write_global_document(final_url)
-                        self.lib.create_find_document(a['href'].replace('/','_'),div,"Githubgist")
-                        self.lib.send_email(div,"Githubgist",final_url)
-
+                        if b and not id in self.found:
+                            self.found.append(id)
+                            print "La url: " + final_url + " coincide con alguna de las busquedas!"
+                            date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                            self.lib.write_global_document(final_url)
+                            self.lib.create_find_document(id,div,"Githubgist")
+                            self.lib.send_email(div,"Githubgist",final_url)
+                except:
+                    continue

@@ -14,12 +14,18 @@ class Pastebin(threading.Thread):
         threading.Thread.__init__(self)
         self.pastebin_url = "http://pastebin.com/raw.php?i="
         self.lib = lib
+        self.found = []
 
 
     def run(self):
         print "Starting Pastebin Thread"
         while 1:
-            self.pastebin()
+            try:
+                self.pastebin()
+            except:
+                print "**Error in Pastebin"
+                time.sleep(60)
+                pass
             time.sleep(10)
         print "Exiting Pastebin Thread"
 
@@ -35,7 +41,6 @@ class Pastebin(threading.Thread):
         while can:
             try:
                 html=self.lib.request_url("http://pastebin.com/archive")
-                # html = urllib2.urlopen("http://pastebin.com/archive").read()
                 can = False
             except:
                 pass
@@ -49,22 +54,27 @@ class Pastebin(threading.Thread):
 
 
         for a in aHref:
-            if not "archive/" in a['href']:
-                final_url = "http://pastebin.com/raw.php?i=" + a['href'][1:]
-                try:
-                    html=self.lib.request_url(final_url)
-                except:
-                    continue
+            try:
+                if not "archive/" in a['href']:
+                    id = a['href'][1:]
+                    final_url = "http://pastebin.com/raw.php?i=" + id
 
-                try:
-                    b = self.lib.search_regex(html)
-                except:
-                    continue
+                    try:
+                        html=self.lib.request_url(final_url)
+                    except:
+                        continue
 
-                if b:
-                    print "La url: " + final_url + " coincide con alguna de las busquedas!"
-                    date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    self.lib.write_global_document(final_url)
-                    self.lib.create_find_document(a['href'][1:],html,"pastebin")
-                    self.lib.send_email(html,"pastebin",final_url)
+                    try:
+                        b = self.lib.search_regex(html)
+                    except:
+                        continue
 
+                    if b and not id in self.found:
+                        self.found.append(id)
+                        print "La url: " + final_url + " coincide con alguna de las busquedas!"
+                        date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        self.lib.write_global_document(final_url)
+                        self.lib.create_find_document(id,html,"pastebin")
+                        self.lib.send_email(html,"pastebin",final_url)
+            except:
+                continue

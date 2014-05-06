@@ -14,6 +14,7 @@
     <!-- Recomended both activated (1) -->
     <proxy>1</proxy>
     <CreateProxyList>1</CreateProxyList>
+    <proxyListUpdateTime>3600</proxyListUpdateTime> <!--  in seconds  -->
 
     <!-- config files path -->
     <regexFile>Config/regex.conf</regexFile>
@@ -24,17 +25,18 @@
     <sites>
         <site name="pastebin">1</site>
         <site name="pastie">1</site>
-        <site name="linkpaste">0</site>
+        <site name="linkpaste">1</site>
         <site name="gist.github">1</site>
         <site name="ideone">1</site>
         <site name="codepad">1</site>
-        <site name="snipt">0</site>
+        <site name="snipt">1</site>
         <site name="slexy">1</site>
-        <site name="dropbucket">0</site>
+        <site name="dropbucket">1</site>
         <site name="paste.ru">1</site>
         <site name="paste.lisp">1</site>
         <site name="dzone">1</site>
         <site name="lpaste">1</site>
+        <site name="copytaste">1</site>
     </sites>
 
 

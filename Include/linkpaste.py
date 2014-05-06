@@ -14,12 +14,19 @@ class Linkpaste(threading.Thread):
         threading.Thread.__init__(self)
         self.first_url = "http://www.linkpaste.com/last-pastes.html"
         self.lib = lib
+        self.found = []
 
 
     def run(self):
         print "Starting linkpaste Thread"
         while 1:
-            self.linkpaste()
+            try:
+                self.linkpaste()
+            except:
+                print "**Error in linkpaste"
+                time.sleep(60)
+                pass
+
             time.sleep(10)
         print "Exiting linkpaste Thread"
 
@@ -35,7 +42,6 @@ class Linkpaste(threading.Thread):
         while can:
             try:
                 html=self.lib.request_url(self.first_url)
-                # html = urllib2.urlopen("http://pastebin.com/archive").read()
                 can = False
             except:
                 pass
@@ -47,25 +53,29 @@ class Linkpaste(threading.Thread):
         aHref = table.findAll('a')
 
         for a in aHref:
-            if not "/user/" in a['href']:
-                final_url = a['href']
-                try:
-                    html=self.lib.request_url(final_url)
-                except:
-                    continue
+            try:
+                if not "/user/" in a['href']:
+                    final_url = a['href']
+                    id = final_url.split('/')[1]
+                    try:
+                        html=self.lib.request_url(final_url)
+                    except:
+                        continue
 
-                soup=BeautifulSoup(html)
-                div = soup.findAll('div',{ "class" : "row pasteshere" })[0].text
+                    soup=BeautifulSoup(html)
+                    div = soup.findAll('div',{ "class" : "row pasteshere" })[0].text
 
-                try:
-                    b = self.lib.search_regex(div)
-                except:
-                    continue
+                    try:
+                        b = self.lib.search_regex(div)
+                    except:
+                        continue
 
-                if b:
-                    print "La url: " + final_url + " coincide con alguna de las busquedas!"
-                    date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    self.lib.write_global_document(final_url)
-                    self.lib.create_find_document(final_url.split('/')[1],div,"linkpaste")
-                    self.lib.send_email(html,"linkpaste",final_url)
-
+                    if b and not id in self.found:
+                        self.found.append(id)
+                        print "La url: " + final_url + " coincide con alguna de las busquedas!"
+                        date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        self.lib.write_global_document(final_url)
+                        self.lib.create_find_document(id,div,"linkpaste")
+                        self.lib.send_email(html,"linkpaste",final_url)
+            except:
+                continue

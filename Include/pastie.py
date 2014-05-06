@@ -16,16 +16,20 @@ class Pastie(threading.Thread):
         self.pastie_id_digits = "0123456789"
         self.pastie_url_f = "http://pastie.org/pastes/"
         self.pastie_url_e = "/text"
-        self.pastie_archive = "http://pastie.org/pastes/y/"#2014/4/page/1"
-
-
+        self.pastie_archive = "http://pastie.org/pastes/y/"
         self.lib = lib
+        self.found = []
 
 
     def run(self):
         print "Starting Pastie Thread"
         while 1:
-            self.pastie()
+            try:
+                self.pastie()
+            except:
+                print "**Error in Pastie"
+                time.sleep(60)
+                pass
             time.sleep(10)
         print "Exiting Pastebin Thread"
 
@@ -51,41 +55,44 @@ class Pastie(threading.Thread):
             try:
                 html=self.lib.request_url(url_now)
             except:
-                print "jar"
                 continue
 
             soup=BeautifulSoup(html)
 
             divs = soup.findAll('div',{ "class" : "pastePreview" })
             for div in divs:
-                a = div.find('a')
-                final_url = a['href']
                 try:
-                    final_html=self.lib.request_url(final_url+"/text")
+                    a = div.find('a')
+                    final_url = a['href']
+                    try:
+                        final_html=self.lib.request_url(final_url+"/text")
+                    except:
+                        continue
+                    final_soup=BeautifulSoup(final_html)
+                    final_pre = final_soup.find('pre')
+                    pre = final_pre.text
+
+                    try:
+                        b = self.lib.search_regex(pre)
+                    except:
+                        continue
+
+                    if b and not id in self.found:
+                        self.found.append(id)
+                        print "La url: " + final_url + " coincide con alguna de las busquedas!"
+                        date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        self.lib.write_global_document(final_url)
+
+                        url_spar = final_url.split("/")
+                        id = url_spar[len(url_spar)-1]
+                        self.lib.create_find_document(id,pre,"pastie")
+
+                        self.lib.send_email(pre,"pastie",final_url)
                 except:
                     continue
-                final_soup=BeautifulSoup(final_html)
-                final_pre = final_soup.find('pre')
-                pre = final_pre.text
-
-                try:
-                    b = self.lib.search_regex(pre)
-                except:
-                    continue
-
-                if b:
-                    print "La url: " + final_url + " coincide con alguna de las busquedas!"
-                    date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    self.lib.write_global_document(final_url)
-
-                    url_spar = final_url.split("/")
-                    id = url_spar[len(url_spar)-1]
-                    self.lib.create_find_document(id,pre,"pastie")
-
-                    self.lib.send_email(pre,"pastie",final_url)
 
             if len(divs) == 0:
-                # break
+                break # comentar si quieres recorrer el historial
                 if month == 1:
                     month = 12
                     year -= 1

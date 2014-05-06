@@ -14,12 +14,18 @@ class Snipt(threading.Thread):
         threading.Thread.__init__(self)
         self.snipt_url = "https://snipt.net/public/?page="
         self.lib = lib
+        self.found = []
 
 
     def run(self):
         print "Starting Snipt Thread"
         while 1:
-            self.snipt()
+            try:
+                self.snipt()
+            except:
+                print "**Error in Snipt"
+                time.sleep(60)
+                pass
             time.sleep(10)
         print "Exiting Snipt Thread"
 
@@ -31,7 +37,6 @@ class Snipt(threading.Thread):
             while can:
                 try:
                     html=self.lib.request_url(self.snipt_url + str(i))
-                    # html = urllib2.urlopen("http://pastebin.com/archive").read()
                     can = False
                 except:
                     pass
@@ -47,6 +52,7 @@ class Snipt(threading.Thread):
                     as1 = foot.findAll('a')
                     for a in as1:
                         if "Raw" in a.text and not "nice" in a["href"]:
+                            id = a['href'].replace('/','_')
                             final_url = a['href']
                             try:
                                 html=self.lib.request_url(final_url)
@@ -59,11 +65,12 @@ class Snipt(threading.Thread):
                             except:
                                 continue
 
-                            if b:
+                            if b and not id in self.found:
+                                self.found.append(id)
                                 print "La url: " + final_url + " coincide con alguna de las busquedas!"
                                 date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                                 self.lib.write_global_document(final_url)
-                                self.lib.create_find_document(a['href'].replace('/','_'),html,"Snipt")
+                                self.lib.create_find_document(id,html,"Snipt")
                                 self.lib.send_email(html,"Snipt",final_url)
                 except:
                     continue

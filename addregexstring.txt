@@ -1,0 +1,3 @@
+regex1
+busqueda2
+algo.com

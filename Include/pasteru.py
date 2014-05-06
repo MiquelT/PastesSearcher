@@ -14,12 +14,18 @@ class Pasteru(threading.Thread):
         threading.Thread.__init__(self)
         self.basic_url = "http://paste.org.ru"
         self.lib = lib
+        self.found = []
 
 
     def run(self):
         print "Starting Paste.ru Thread"
         while 1:
-            self.pasteru()
+            try:
+                self.pasteru()
+            except:
+                print "**Error in paste.ru"
+                time.sleep(60)
+                pass
             time.sleep(10)
         print "Exiting Paste.ru Thread"
 
@@ -32,7 +38,6 @@ class Pasteru(threading.Thread):
         while can:
             try:
                 html=self.lib.request_url(self.basic_url)
-                # html = urllib2.urlopen("http://pastebin.com/archive").read()
                 can = False
             except:
                 pass
@@ -48,25 +53,30 @@ class Pasteru(threading.Thread):
 
 
         for a in aHref:
-            final_url = self.basic_url + a['href']
             try:
-                html=self.lib.request_url(final_url)
+                id = a['href'][1:]
+                final_url = self.basic_url + a['href']
+                try:
+                    html=self.lib.request_url(final_url)
+                except:
+                    continue
+
+                soup=BeautifulSoup(html)
+
+                div = soup.find('textarea',{ "name" : "code" }).text
+
+                try:
+                    b = self.lib.search_regex(div)
+                except:
+                    continue
+
+                if b and not id in self.found:
+                    self.found.append(id)
+                    print "La url: " + final_url + " coincide con alguna de las busquedas!"
+                    date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    self.lib.write_global_document(final_url)
+                    self.lib.create_find_document(id,div,"paste.ru")
+                    self.lib.send_email(div,"paste.ru",final_url)
             except:
                 continue
-
-            soup=BeautifulSoup(html)
-
-            div = soup.find('textarea',{ "name" : "code" }).text
-
-            try:
-                b = self.lib.search_regex(div)
-            except:
-                continue
-
-            if b:
-                print "La url: " + final_url + " coincide con alguna de las busquedas!"
-                date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                self.lib.write_global_document(final_url)
-                self.lib.create_find_document(a['href'][1:],div,"paste.ru")
-                self.lib.send_email(div,"paste.ru",final_url)
 

@@ -22,12 +22,14 @@ from Include.pasteru import Pasteru
 from Include.pastelisp import Pastelisp
 from Include.dzone import Dzone
 from Include.lpaste import Lpaste
+from Include.copytaste import Copytaste
 
 import os
 import sys
 import xml.etree.ElementTree as ET
 import time
 import signal
+import threading
 
 path = "Data/"
 
@@ -54,8 +56,8 @@ def presentation():
 
 
 def usage():
-    print "\nPastesSearcher\n\nUsage:\n"
-    print "$ python main.py"
+    print "Usage:\n"
+    print "$ python main.py [-c CONFIGFILE]\n\n"
     sys.exit(0)
 
 
@@ -64,6 +66,7 @@ def init_args():
     global path
     global proxyBool
     global CreateProxyList
+    global proxyListUpdateTime
 
     global regrexPath
     global proxyPath
@@ -72,7 +75,20 @@ def init_args():
 
     global emailOptions
 
-    tree = ET.parse('Config/config.xml')
+    configpath = 'Config/config.xml'
+
+    if len(sys.argv) > 2 and sys.argv[1] == '-c':
+        configpathT = sys.argv[2]
+        if os.path.isfile(configpathT):
+            configpath = configpathT
+    elif len(sys.argv) == 2 and  sys.argv[1] == '-h':
+        usage()
+    elif len(sys.argv) > 1:
+        usage()
+
+
+
+    tree = ET.parse(configpath)
     root = tree.getroot()
 
     regrexPath = root.find('regexFile').text
@@ -81,6 +97,9 @@ def init_args():
 
     proxyBool = int(root.find('proxy').text)
     CreateProxyList = int(root.find('CreateProxyList').text)
+    proxyListUpdateTime = int(root.find('proxyListUpdateTime').text)
+
+    if proxyListUpdateTime < 900: proxyListUpdateTime = 900
 
     emailB = int(root.find('email').attrib['active'])
 
@@ -124,11 +143,25 @@ def init_config():
         f = open(proxyPath, 'r')
         for l in f:
             if l != "": proxyList.append(l)
+        f.close()
 
+
+def update_proxy_list():
+    plc = ProxyListCreator.ProxyListCreator(proxyPath)
+    plc.create_list()
+    f = open(proxyPath, 'r')
+    proxyList = []
+    for l in f:
+        if l != "": proxyList.append(l)
+    f.close()
 
 
 def start():
-    lib = Commonlib(proxyBool,proxyList,path,regrexList,emailOptions)
+    global lock
+    global emailLock
+    lock = threading.Lock()
+    emailLock = threading.Lock()
+    lib = Commonlib(proxyBool,proxyList,path,regrexList,emailOptions,lock, emailLock)
 
     if activated["pastie"]:
         try:
@@ -222,15 +255,26 @@ def start():
         except:
             pass
 
-    while 1:
-        time.sleep(5)
+    if activated["copytaste"]:
+        try:
+            copytasteT = Copytaste(lib)
+            copytasteT.start()
+        except:
+            pass
 
+
+    while 1:
+        time.sleep(proxyListUpdateTime)
+        if CreateProxyList:
+            lock.acquire()
+            print "\nUPDATING PROXY LIST\n"
+            update_proxy_list()
+            lock.release()
 
 
 def signal_handler(signal, frame):
     print "\nYou pressed Ctrl+C"
     os._exit(0)
-
 
 
 if __name__ == "__main__":
